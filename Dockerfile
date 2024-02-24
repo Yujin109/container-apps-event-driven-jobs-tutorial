@@ -1,9 +1,18 @@
-FROM node:lts-alpine
-ENV NODE_ENV=production
-WORKDIR /usr/src/app
-COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
-RUN npm install --production --silent && mv node_modules ../
+FROM python:3.10
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the rest of the application code
 COPY . .
-RUN chown -R node /usr/src/app
-USER node
-CMD ["node", "index.js"]
+
+RUN pip install --no-cache-dir -U pip && \
+    pip install --no-cache-dir -U poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-dev
+
+# Expose the port the app runs on
+EXPOSE 8080
+
+# Start the application
+CMD ["poetry", "run", "python", "main.py"]
