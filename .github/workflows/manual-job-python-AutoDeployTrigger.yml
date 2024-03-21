@@ -1,0 +1,46 @@
+name: Trigger auto deployment for manual-job-python
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches:
+      [ python ]
+    paths:
+    - '**'
+    - '.github/workflows/manual-job-python-AutoDeployTrigger.yml'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.MANUALJOBPYTHON_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.MANUALJOBPYTHON_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.MANUALJOBPYTHON_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/backend_src 
+          registryUrl: neoaicapricorncr.azurecr.io
+          registryUsername: ${{ secrets.MANUALJOBPYTHON_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.MANUALJOBPYTHON_REGISTRY_PASSWORD }}
+          containerAppName: manual-job-python
+          resourceGroup: neoai-poc
+          imageToBuild: neoaicapricorncr.azurecr.io/manual-job-python:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
