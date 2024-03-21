@@ -12,9 +12,9 @@ def sleep(seconds: int) -> None:
 
 def main() -> None:
     print("処理全体を開始します。")
-    for i in range(1):
+    for i in range(90):
         print(f"{i+1}回目の処理を開始します。")
-        sleep(30)
+        sleep(60)
         print(f"{i+1}回目の処理を終了します。")
     print("処理全体を終了します。")
 
